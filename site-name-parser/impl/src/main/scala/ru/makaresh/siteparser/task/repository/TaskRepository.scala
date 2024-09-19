@@ -2,7 +2,6 @@ package ru.makaresh.siteparser.task.repository
 
 import cats.effect.kernel.Async
 import doobie.*
-import doobie.implicits.legacy.instant.*
 import doobie.implicits.*
 import doobie.postgres.implicits.*
 import ru.makaresh.siteparser.task.model.{Task, TaskStatus}
@@ -10,6 +9,9 @@ import ru.makaresh.siteparser.task.model.{Task, TaskStatus}
 import java.time.Instant
 import java.util.UUID
 
+/**
+ * @author Bannikov Makar
+ */
 class TaskRepository[F[_]: Async](transactor: Transactor[F]) {
 
   import TaskRepository.*

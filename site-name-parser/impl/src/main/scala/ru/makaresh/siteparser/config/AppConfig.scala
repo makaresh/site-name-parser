@@ -1,11 +1,11 @@
 package ru.makaresh.siteparser.config
 
-import cats.effect.kernel.Async
-import doobie.hikari.HikariTransactor
-import doobie.util.ExecutionContexts
 import pureconfig.ConfigReader
 import pureconfig.generic.derivation.default.*
 
+/**
+ * @author Bannikov Makar
+ */
 case class AppConfig(api: ApiConfig, db: DbConfig, titleBatch: Int) derives ConfigReader
 
 case class ApiConfig(
@@ -19,20 +19,8 @@ case class DbConfig(
   user: String,
   password: String,
   databaseName: String,
+  url: String,
   driver: String,
   pool: Int
-) derives ConfigReader:
-  def url: String = s"jdbc:postgresql://$host:$port/$databaseName"
+) derives ConfigReader
 
-class SiteParserTransactor[F[_]: Async](config: DbConfig) {
-  val transactor = for {
-    ec <- ExecutionContexts.fixedThreadPool(config.pool)
-    tx <- HikariTransactor.newHikariTransactor(
-            config.driver,
-            config.url,
-            config.user,
-            config.password,
-            ec
-          )
-  } yield tx
-}

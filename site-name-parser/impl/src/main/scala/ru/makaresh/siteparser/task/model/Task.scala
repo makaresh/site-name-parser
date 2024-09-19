@@ -5,6 +5,11 @@ import io.circe.Codec
 import java.time.Instant
 import java.util.UUID
 
+/**
+ * Task entity
+ * 
+ * @author Bannikov Makar
+ */
 case class Task(
   id: UUID,
   status: TaskStatus,

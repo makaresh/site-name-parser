@@ -1,9 +1,7 @@
 package ru.makaresh.siteparser.title.repository
 
 import cats.effect.kernel.Async
-import cats.implicits.*
-import doobie.implicits.{toConnectionIOOps, toSqlInterpolator}
-import doobie.postgres.*
+import doobie.implicits.*
 import doobie.postgres.implicits.*
 import doobie.util.update.Update
 import doobie.{ConnectionIO, Transactor}
@@ -11,6 +9,9 @@ import ru.makaresh.siteparser.title.model.Title
 
 import java.util.UUID
 
+/**
+ * @author Bannikov Makar
+ */
 class TitleRepository[F[_]: Async](transactor: Transactor[F]) {
 
   import TitleRepository.*
@@ -28,7 +29,13 @@ class TitleRepository[F[_]: Async](transactor: Transactor[F]) {
 private object TitleRepository:
 
   private def selectByTaskId(taskId: UUID, limit: Int, offset: Int): ConnectionIO[List[Title]] =
-    sql"select * from title where task_id = $taskId limit $limit offset $offset".query[Title].to[List]
+    sql"""
+         select * 
+         from title as ttl
+         join task as tsk on ttl.task_id = tsk.id  
+         where tsk.status = 'Success' and ttl.task_id = $taskId 
+         limit $limit offset $offset
+         """.query[Title].to[List]
 
   private def insert(title: Title): ConnectionIO[Option[Title]] =
     sql"""

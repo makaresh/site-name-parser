@@ -6,20 +6,19 @@ import org.http4s.*
 import org.http4s.circe.*
 import org.http4s.dsl.Http4sDsl
 import org.http4s.dsl.io.*
-import ru.makaresh.siteparser.api.title.ApiResult
 import ru.makaresh.siteparser.api.title.request.*
 import ru.makaresh.siteparser.api.title.response.*
+import ru.makaresh.siteparser.common.ApiResult
 import ru.makaresh.siteparser.title.model.Title
 import ru.makaresh.siteparser.title.service.TitleService
 
 import java.util.UUID
 import scala.util.Try
 
-class TitleRouts[F[_]: Async](service: TitleService[F]) extends TitleEntityFormat[F] {
-
-  given dsl: Http4sDsl[F] = Http4sDsl.apply[F]
-
-  import dsl.*
+/**
+ * @author Bannikov Makar
+ */
+class TitleRouts[F[_]: Async](service: TitleService[F]) extends Http4sDsl[F] with TitleEntityFormat[F] {
 
   private val getByTaskId: HttpRoutes[F] = HttpRoutes.of[F] {
     case GET -> Root / "title" :? TaskId(taskId) +& Limit(limit) +& Offset(offset) =>
@@ -49,8 +48,7 @@ class TitleRouts[F[_]: Async](service: TitleService[F]) extends TitleEntityForma
 
   private def makeResponse[R <: ApiOutput](
     result: ApiResult[R]
-  )(implicit dsl: Http4sDsl[F], encoder: EntityEncoder[F, R]): F[Response[F]] = {
-    import dsl.*
+  )(using encoder: EntityEncoder[F, R]): F[Response[F]] = {
 
     result match {
       case Right(value)                     => Ok(value)
@@ -58,7 +56,7 @@ class TitleRouts[F[_]: Async](service: TitleService[F]) extends TitleEntityForma
       case Left(TaskNotFoundError(message)) => NotFound(message)
       case Left(TaskNotReadyError(message)) => BadRequest(message)
       case Left(TaskFailedError(message))   => InternalServerError(message)
-      case _                                => InternalServerError()
+      case _                                => InternalServerError("Internal Server Error")
     }
   }
 
@@ -101,9 +99,6 @@ trait TitleEntityFormat[F[_]: Concurrent] {
   given EntityDecoder[F, GetSiteNamePageAsyncResponse] = jsonOf[F, GetSiteNamePageAsyncResponse]
   given EntityEncoder[F, GetSiteNamePageAsyncResponse] = jsonEncoderOf[F, GetSiteNamePageAsyncResponse]
 
-  given EntityDecoder[F, ListResponse] = jsonOf[F, ListResponse]
-  given EntityEncoder[F, ListResponse] = jsonEncoderOf[F, ListResponse]
-
-  given EntityDecoder[F, SingleResponse] = jsonOf[F, SingleResponse]
-  given EntityEncoder[F, SingleResponse] = jsonEncoderOf[F, SingleResponse]
+  given EntityDecoder[F, GetByTaskIdResponse] = jsonOf[F, GetByTaskIdResponse]
+  given EntityEncoder[F, GetByTaskIdResponse] = jsonEncoderOf[F, GetByTaskIdResponse]
 }

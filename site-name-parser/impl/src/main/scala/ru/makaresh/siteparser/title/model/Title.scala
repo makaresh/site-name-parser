@@ -5,6 +5,11 @@ import io.circe.*
 import java.time.Instant
 import java.util.UUID
 
+/**
+ * Title entity
+ *
+ * @author Bannikov Makar
+ */
 case class Title(
   id: UUID,
   url: String,

@@ -5,7 +5,7 @@ import cats.implicits.*
 import io.circe.syntax.*
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
-import ru.makaresh.siteparser.api.title.Result
+import ru.makaresh.siteparser.common.Result
 import ru.makaresh.siteparser.task.model.Task
 import ru.makaresh.siteparser.task.model.TaskStatus.New
 import ru.makaresh.siteparser.task.repository.TaskRepository
@@ -13,6 +13,9 @@ import ru.makaresh.siteparser.task.repository.TaskRepository
 import java.time.Instant
 import java.util.UUID
 
+/**
+ * @author Bannikov Makar
+ */
 class TaskService[F[_]: Async](repository: TaskRepository[F]) {
 
   val logger: Logger[F] = Slf4jLogger.getLogger[F]

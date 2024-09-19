@@ -6,6 +6,11 @@ import java.util.UUID
 
 trait ApiOutput
 
+/**
+ * Responses dto
+ *
+ * @author Bannikov Makar
+ */
 case class GetSiteNamePageSyncResponse(
   success: List[SiteNameSuccessResponse],
   error: List[SiteNameErrorResponse] = List.empty
@@ -19,9 +24,8 @@ case class SiteNameErrorResponse(url: String, code: Option[Int], message: String
 
 case class GetSiteNamePageAsyncResponse(taskId: UUID) extends ApiOutput derives Codec
 
-case class SingleResponse(data: SiteNameSuccessResponse) extends ApiOutput derives Codec
-
-case class ListResponse(data: List[SiteNameSuccessResponse]) extends ApiOutput derives Codec
+case class GetByTaskIdResponse(taskId: UUID, taskStatus: String, data: List[SiteNameSuccessResponse])
+  extends ApiOutput derives Codec
 
 case class SiteParserError(url: String, code: Option[Int], message: String)
 

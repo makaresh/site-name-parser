@@ -1,16 +1,18 @@
 package ru.makaresh.siteparser.title.service
 
+import cats.effect.Async
 import cats.effect.implicits.*
-import cats.effect.kernel.Async
 import cats.implicits.*
-import ru.makaresh.siteparser.api.title.Result
-import ru.makaresh.siteparser.api.title.response.{ApiError, SiteParserError}
+import ru.makaresh.siteparser.api.title.response.*
 import ru.makaresh.siteparser.task.service.TaskService
 import ru.makaresh.siteparser.title.model.Title
 import ru.makaresh.siteparser.title.repository.TitleRepository
 
 import java.util.UUID
 
+/**
+ * @author Bannikov Makar
+ */
 trait TitleExecutor[F[_]: Async] extends TitleParser[F] {
 
   def titleRepository: TitleRepository[F]
@@ -22,24 +24,31 @@ trait TitleExecutor[F[_]: Async] extends TitleParser[F] {
     taskId: Option[UUID] = None
   ): F[(List[Title], List[SiteParserError])] =
     for {
-      results: List[Result[Title]] <- urls.parTraverse(findTitle)
-      error: List[SiteParserError]  = results.collect { case Left(value) => value }
-      success: List[Title]          = results.collect { case Right(value) => value }
-      saved                        <- titleRepository.save(success.map(_.withTaskId(taskId)))
+      results <- urls.parTraverse(findTitle)
+      error    = results.collect { case Left(value) => value }
+      success  = results.collect { case Right(value) => value }
+      saved   <- titleRepository.save(success.map(_.withTaskId(taskId)))
     } yield (saved, error)
 
-  def processSiteTitlesAsync(urls: List[String], taskId: Either[ApiError, UUID]): F[Unit] =
+  def processSiteTitlesAsync(urls: List[String], taskId: Either[ApiError, UUID]): F[Unit] = {
     taskId match {
       case Right(id) =>
-        for {
+        val result = for {
           task  <- taskService.startTask(id)
           _     <- logger.info(s"Started task: $task")
           parted = urls.grouped(titleBatch).toList
-          a     <- parted.traverse(processSiteTitles(_, Some(id)))
+          _     <- parted.traverse_(processSiteTitles(_, Some(id)))
           task  <- taskService.finishTask(id, true)
           _     <- logger.info(s"Task finished: $task")
         } yield ()
+        result.recoverWith { case err =>
+          for {
+            _ <- logger.info(s"Task with id: $id failed ")
+            _ <- logger.debug(err.getMessage)
+            _ <- taskService.finishTask(id, false)
+          } yield ()
+        }
       case _         => ().pure[F]
     }
-
+  }
 }
