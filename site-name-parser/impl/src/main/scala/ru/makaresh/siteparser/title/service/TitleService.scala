@@ -41,10 +41,17 @@ class TitleService[F[_]: Async](
   def getSiteTitles(
     urls: List[String]
   ): F[ApiResult[GetSiteNamePageSyncResponse]] =
-    processSiteTitles(urls)
+    if (urls.length <= titleBatch)
+      processSiteTitles(urls)
       .map((success, error) =>
         GetSiteNamePageSyncResponse(makeSuccessResponse(success), makeErrorResponse(error)).asRight[ApiError]
       )
+    else
+      Left(TooManyUrlsError(
+        s"""
+           |Input urls array too big, allowed array size is $titleBatch.
+           |Try GetSiteNameAsync request for async title extraction execution.
+           |""".stripMargin)).pure[F]
 
   def getSiteTitlesAsync(urls: List[String]): F[ApiResult[GetSiteNamePageAsyncResponse]] =
     for {

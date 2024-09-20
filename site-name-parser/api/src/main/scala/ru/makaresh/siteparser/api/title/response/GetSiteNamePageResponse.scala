@@ -36,3 +36,4 @@ case class TaskNotFoundError(message: String)                   extends ApiError
 case class TaskNotReadyError(message: String)                   extends ApiError
 case class TaskFailedError(message: String)                     extends ApiError
 case class TaskExecutionError(message: String, cause: ApiError) extends ApiError
+case class TooManyUrlsError(message: String)                    extends ApiError

@@ -56,6 +56,7 @@ class TitleRouts[F[_]: Async](service: TitleService[F]) extends Http4sDsl[F] wit
       case Left(TaskNotFoundError(message)) => NotFound(message)
       case Left(TaskNotReadyError(message)) => BadRequest(message)
       case Left(TaskFailedError(message))   => InternalServerError(message)
+      case Left(TooManyUrlsError(message))  => BadRequest(message)
       case _                                => InternalServerError("Internal Server Error")
     }
   }
