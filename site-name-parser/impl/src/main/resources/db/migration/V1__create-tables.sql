@@ -9,7 +9,7 @@ create table if not exists task(
 create table if not exists title(
     id uuid primary key,
     url varchar not null,
-    value varchar not null,
+    title_value varchar not null,
     created_at timestamp not null,
     task_id uuid references task(id)
 );

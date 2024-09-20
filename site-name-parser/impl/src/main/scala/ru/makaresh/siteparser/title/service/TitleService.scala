@@ -2,6 +2,7 @@ package ru.makaresh.siteparser.title.service
 
 import cats.effect.Async
 import cats.effect.implicits.*
+import cats.effect.std.Supervisor
 import cats.implicits.*
 import ru.makaresh.siteparser.api.title.response.*
 import ru.makaresh.siteparser.common.*
@@ -25,15 +26,14 @@ class TitleService[F[_]: Async](
 
   def findByTaskId(taskId: UUID, limit: Int, offset: Int): F[ApiResult[GetByTaskIdResponse]] =
     for {
-      taskOpt     <- taskService.findById(taskId)
-      nonEmptyTask = getNonEmptyTask(taskOpt)(TaskNotFoundError(s"Task with id: $taskId not found"))
-      titles      <- nonEmptyTask.fold(
-                       err => Left(err).pure[F],
-                       t => titleRepository.findByTaskId(t.id, limit, offset).map(Right(_))
-                     )
+      foundTask <- taskService.findById(taskId)
+      titles    <- foundTask.fold(
+                     err => Left(err).pure[F],
+                     t => titleRepository.findByTaskId(t.id, limit, offset).map(Right(_))
+                   )
     } yield {
       for {
-        task   <- nonEmptyTask
+        task   <- foundTask
         result <- titles.map(t => GetByTaskIdResponse(task.id, task.status.toString, makeSuccessResponse(t)))
       } yield result
     }
@@ -48,17 +48,16 @@ class TitleService[F[_]: Async](
 
   def getSiteTitlesAsync(urls: List[String]): F[ApiResult[GetSiteNamePageAsyncResponse]] =
     for {
-      task    <- taskService.createTask(urls)
-      nonEmpty = getNonEmptyTask(task)(TaskCreationError("Error creation task"))
-      _       <- processSiteTitlesAsync(urls, nonEmpty.map(_.id)).start
-    } yield nonEmpty.map(t => GetSiteNamePageAsyncResponse(t.id))
+      task <- taskService.createTask(urls)
+      _    <- processSiteTitlesAsync(urls, task.map(_.id)).start
+    } yield task.map(t => GetSiteNamePageAsyncResponse(t.id))
 
   private def makeSuccessResponse(titles: List[Title]): List[SiteNameSuccessResponse] =
     titles
       .map(title =>
         SiteNameSuccessResponse(
           title.url,
-          title.value
+          title.titleValue
         )
       )
 

@@ -31,7 +31,7 @@ trait TitleParser[F[_]: Async] {
       Title(
         id = UUID.randomUUID(),
         url = url,
-        value = txt,
+        titleValue = txt,
         createdAt = Instant.now(),
         taskId = None
       )

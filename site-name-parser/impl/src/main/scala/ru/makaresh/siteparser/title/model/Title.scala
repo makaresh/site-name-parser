@@ -13,7 +13,7 @@ import java.util.UUID
 case class Title(
   id: UUID,
   url: String,
-  value: String,
+  titleValue: String,
   createdAt: Instant,
   taskId: Option[UUID]
 ) derives Codec:

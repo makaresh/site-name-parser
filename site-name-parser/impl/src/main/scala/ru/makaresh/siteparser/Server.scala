@@ -38,7 +38,7 @@ object Server:
     for {
       ec         <- ExecutionContexts.fixedThreadPool[F](cfg.db.pool)
       tx          = HikariTransactor[F](dataSource, ec)
-      a          <- DbMigrator[F](dataSource).migrate()
+      _          <- Resource.eval(DbMigrator(dataSource).pure[F])
       client     <- EmberClientBuilder.default[F].build
       taskModule  = TaskModule[F](tx)
       titleModule = TitleModule[F](tx, taskModule.service, client, cfg.titleBatch)

@@ -23,4 +23,3 @@ case class DbConfig(
   driver: String,
   pool: Int
 ) derives ConfigReader
-

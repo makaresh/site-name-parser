@@ -9,8 +9,11 @@ object Dependencies {
     val circeVersion      = "0.14.9"
     val doobieVersion     = "1.0.0-RC6"
     val flywayVersion     = "10.18.0"
+    val h2Version         = "2.3.232"
     val pureConfigVersion = "0.17.7"
     val logbackVersion    = "1.5.6"
+    val scalaTestVersion  = "3.2.18"
+    val scalaCheckVersion = "1.18.1"
   }
 
   import Version.*
@@ -28,8 +31,17 @@ object Dependencies {
   private val postgresDoobie      = "org.tpolecat"          %% "doobie-postgres"            % doobieVersion
   private val doobiePostgresCirce = "org.tpolecat"          %% "doobie-postgres-circe"      % doobieVersion
   private val flyway              = "org.flywaydb"           % "flyway-database-postgresql" % flywayVersion
+  private val h2                  = "com.h2database"         % "h2"                         % h2Version
   private val pureconfig          = "com.github.pureconfig" %% "pureconfig-core"            % pureConfigVersion
   private val logback             = "ch.qos.logback"         % "logback-classic"            % logbackVersion
+  private val scalaTest           = "org.scalatest"         %% "scalatest"                  % scalaTestVersion
+  private val scalaCheck          = "org.scalacheck"        %% "scalacheck"                 % scalaCheckVersion
+
+  val testDependencies: Seq[ModuleID] = Seq(
+    scalaTest  % Test,
+    scalaCheck % Test,
+    h2         % Test
+  )
 
   val apiDependencies: Seq[ModuleID] = Seq(circeCore)
 
@@ -48,5 +60,5 @@ object Dependencies {
     flyway,
     pureconfig,
     logback
-  )
+  ) ++ testDependencies
 }
