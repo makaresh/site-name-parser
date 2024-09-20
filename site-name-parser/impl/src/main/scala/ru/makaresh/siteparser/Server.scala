@@ -46,7 +46,7 @@ object Server:
                       .default[F]
                       .withHost(host)
                       .withPort(port)
-                      .withHttpApp(Router("/" -> titleModule.titleRoutes).orNotFound)
+                      .withHttpApp(Router("/api" -> titleModule.titleRoutes).orNotFound)
                       .build
     } yield server
   }
